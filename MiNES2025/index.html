@@ -1,1 +1,117 @@
-index
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule At A Glance</title>
+  <!-- Include external CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <!-- Favicon to prevent 404 errors -->
+  <link rel="icon" href="data:,">
+</head>
+<body>
+  <div class="sched-container" id="schedule-container">
+    <div class="sched-header-image">
+      <img src="MiNES2025Webheader-Main.jpg" alt="MiNES 2025 Header" width="875" height="150">
+    </div>
+    <div class="sched-header">
+      <h1>SCHEDULE AT A GLANCE</h1>
+    </div>
+    
+    <div class="sched-filters-container">
+      <div class="sched-header-section">
+        <div class="sched-date-info" id="date-info">Loading...</div>
+        
+        <!-- Search icon added to top right -->
+        <div class="sched-search-icon" id="searchIcon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+      </div>
+      
+      <!-- Search bar container (initially hidden) -->
+      <div class="sched-search-container" id="searchContainer" style="display: none;">
+        <div class="sched-search-input-wrapper">
+          <input type="text" id="searchInput" placeholder="Search events, locations..." class="sched-search-input">
+          <button type="button" id="clearSearchBtn" class="sched-clear-search-btn">✕</button>
+        </div>
+        <div id="searchResultsInfo" class="sched-search-results-info"></div>
+      </div>
+      
+      <div class="sched-filters">
+        <div class="sched-day-filter">
+          <div class="sched-filter-label">Filter by Day:</div>
+          <div class="sched-day-buttons" id="dayButtons">
+            <!-- Day buttons will be added here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Combined Legend and Expand/Collapse -->
+      <div class="sched-legend-container">
+        <div class="sched-legend">
+          <div class="sched-legend-item">
+            <span class="sched-legend-color" style="background-color: #e6f4ff;"></span>
+            <span>Morning</span>
+          </div>
+          <div class="sched-legend-item">
+            <span class="sched-legend-color" style="background-color: #ffede6;"></span>
+            <span>Afternoon</span>
+          </div>
+          <div class="sched-legend-item">
+            <span class="sched-legend-color" style="background-color: #f0e6ff;"></span>
+            <span>Evening</span>
+          </div>
+          <div class="sched-legend-item sched-ticketed-legend">
+            <span class="sched-ticketed-indicator"></span>
+            <span>Ticketed Event</span>
+          </div>
+          <div class="sched-legend-item sched-expand-collapse">
+            <div class="sched-slider-container">
+              <span class="sched-slider-label">Collapse</span>
+              <label class="sched-toggle-slider">
+                <input type="checkbox" id="expandCollapseToggle">
+                <span class="sched-slider"></span>
+              </label>
+              <span class="sched-slider-label">Expand</span>
+            </div>
+          </div>
+          <div class="sched-legend-item">
+            <button type="button" id="exportPdfBtn" class="sched-export-btn">Export PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sched-schedule" id="scheduleGrid">
+      <!-- Event columns will be added here -->
+    </div>
+    
+    <div class="sched-no-events" id="noEvents" style="display: none;">
+      No events found with the current filters.
+    </div>
+    
+    <!-- Loading indicator -->
+    <div class="sched-loading" id="loading">
+      Loading schedule data...
+    </div>
+    
+    <!-- Error message -->
+    <div class="sched-error-message" id="errorMessage" style="display: none;">
+      Error loading schedule data. Please try again later.
+    </div>
+  </div>
+
+  <!-- Include SheetJS library for Excel file handling -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <!-- Include jsPDF library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <!-- Include external JavaScript file -->
+  <script src="script.js"></script>
+</body>
+</html>
