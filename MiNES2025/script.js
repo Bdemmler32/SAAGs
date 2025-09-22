@@ -637,21 +637,22 @@ document.addEventListener('DOMContentLoaded', function() {
       if (hasSessions) {
         detailsHTML += `
           <div class="nested-sessions">
-            <div class="nested-sessions-header">
-              <div class="session-icon"></div>
-              Session Presentations (${event.sessions.length})
-            </div>
         `;
         
         event.sessions.forEach(session => {
           const sessionDetails = session["Event Details"] ? session["Event Details"].replace(/\n/g, '<br>') : '';
+          // Fix URL to ensure it's not treated as relative path
+          let pdfUrl = session.PDFLink;
+          if (pdfUrl && !pdfUrl.startsWith('http://') && !pdfUrl.startsWith('https://')) {
+            pdfUrl = 'https://' + pdfUrl;
+          }
           detailsHTML += `
             <div class="nested-session">
               <div class="session-title">${session.Event}</div>
               ${session["Time Start"] ? `<div class="session-time">${session["Time Start"]} - ${session["Time End"]}</div>` : ''}
               ${sessionDetails ? `<div class="session-description">${sessionDetails}</div>` : ''}
               ${session.Location ? `<div class="session-location"><strong>Location:</strong> ${session.Location}</div>` : ''}
-              ${session.PDFLink ? `<a href="${session.PDFLink}" class="session-link" target="_blank" onclick="event.stopPropagation();"><span class="pdf-icon">📄</span> View PDF</a>` : ''}
+              ${pdfUrl ? `<a href="${pdfUrl}" class="session-link" target="_blank" onclick="event.stopPropagation();"><span class="pdf-icon">📄</span> View PDF</a>` : ''}
             </div>
           `;
         });
