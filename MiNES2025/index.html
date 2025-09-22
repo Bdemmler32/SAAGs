@@ -47,39 +47,39 @@
             <!-- Day buttons will be added here -->
           </div>
         </div>
+        
+        <div class="sched-event-type-filter">
+          <div class="sched-filter-label">Filter by Event Type:</div>
+          <div class="sched-event-type-buttons" id="eventTypeButtons">
+            <!-- Event type buttons will be added here -->
+          </div>
+        </div>
       </div>
       
       <!-- Combined Legend and Expand/Collapse -->
       <div class="sched-legend-container">
         <div class="sched-legend">
-          <div class="sched-legend-item">
-            <span class="sched-legend-color" style="background-color: #e6f4ff;"></span>
-            <span>Morning</span>
-          </div>
-          <div class="sched-legend-item">
-            <span class="sched-legend-color" style="background-color: #ffede6;"></span>
-            <span>Afternoon</span>
-          </div>
-          <div class="sched-legend-item">
-            <span class="sched-legend-color" style="background-color: #f0e6ff;"></span>
-            <span>Evening</span>
-          </div>
-          <div class="sched-legend-item sched-ticketed-legend">
-            <span class="sched-ticketed-indicator"></span>
-            <span>Ticketed Event</span>
-          </div>
-          <div class="sched-legend-item sched-expand-collapse">
-            <div class="sched-slider-container">
-              <span class="sched-slider-label">Collapse</span>
-              <label class="sched-toggle-slider">
-                <input type="checkbox" id="expandCollapseToggle">
-                <span class="sched-slider"></span>
-              </label>
-              <span class="sched-slider-label">Expand</span>
+          <div class="sched-legend-left">
+            <div class="sched-legend-item sched-ticketed-legend">
+              <span class="sched-ticketed-indicator"></span>
+              <span>Ticketed Event</span>
             </div>
           </div>
-          <div class="sched-legend-item">
-            <button type="button" id="exportPdfBtn" class="sched-export-btn">Export PDF</button>
+          
+          <div class="sched-legend-right">
+            <div class="sched-legend-item sched-expand-collapse">
+              <div class="sched-slider-container">
+                <span class="sched-slider-label">Collapse</span>
+                <label class="sched-toggle-slider">
+                  <input type="checkbox" id="expandCollapseToggle">
+                  <span class="sched-slider"></span>
+                </label>
+                <span class="sched-slider-label">Expand</span>
+              </div>
+            </div>
+            <div class="sched-legend-item">
+              <button type="button" id="exportPdfBtn" class="sched-export-btn">Export PDF</button>
+            </div>
           </div>
         </div>
       </div>

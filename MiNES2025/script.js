@@ -1,6 +1,62 @@
-document.addEventListener('DOMContentLoaded', function() {
+  // Create event type filter buttons
+  function createEventTypeButtons() {
+    // Clear container
+    eventTypeButtonsContainer.innerHTML = '';
+    
+    // Get all unique event types from the events
+    const allEventTypes = new Set();
+    events.forEach(event => {
+      event.EventTypes.forEach(type => {
+        if (type) allEventTypes.add(type);
+      });
+    });
+    
+    const uniqueEventTypes = Array.from(allEventTypes).sort();
+    
+    // Create buttons for each event type
+    uniqueEventTypes.forEach(eventType => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sched-event-type-button';
+      btn.textContent = eventType;
+      btn.dataset.eventType = eventType;
+      
+      // Set button color based on event type
+      const colors = eventTypeColors[eventType] || eventTypeColors['Technical Program'];
+      btn.style.backgroundColor = colors.bg;
+      btn.style.borderColor = colors.border;
+      btn.style.border = `2px solid ${colors.border}`;
+      
+      btn.addEventListener('click', function() {
+        toggleEventTypeFilter(eventType, this);
+      });
+      eventTypeButtonsContainer.appendChild(btn);
+    });
+  }
+  
+  // Toggle event type filter (multi-select)
+  function toggleEventTypeFilter(eventType, button) {
+    if (selectedEventTypes.has(eventType)) {
+      // Remove from selection
+      selectedEventTypes.delete(eventType);
+      button.classList.remove('active');
+    } else {
+      // Add to selection
+      selectedEventTypes.add(eventType);
+      button.classList.add('active');
+    }
+    
+    if (isSearchActive) {
+      // If search is active, apply both filters and search
+      performSearch(searchInput.value);
+    } else {
+      // Otherwise just apply filters
+      applyFilters();
+    }
+  }document.addEventListener('DOMContentLoaded', function() {
   // DOM Elements
   const dayButtonsContainer = document.getElementById('dayButtons');
+  const eventTypeButtonsContainer = document.getElementById('eventTypeButtons');
   const scheduleGrid = document.getElementById('scheduleGrid');
   const noEventsMessage = document.getElementById('noEvents');
   const dateInfo = document.getElementById('date-info');
@@ -20,9 +76,22 @@ document.addEventListener('DOMContentLoaded', function() {
   let events = [];
   let filteredEvents = [];
   let selectedDay = null;
+  let selectedEventTypes = new Set(); // Multi-select for event types
   let lastUpdated = '';
   let isSearchActive = false;
   let prevFilterState = null;
+  
+  // Event Type Colors - pastel palette
+  const eventTypeColors = {
+    'All Conference Activities': { bg: '#e6f4ff', border: '#b3d7ff' },
+    'Council/Committee Meetings': { bg: '#fff2e6', border: '#ffccb3' },
+    'Networking and Social Functions': { bg: '#f0e6ff', border: '#d6b3ff' },
+    'Networking ans Social Functions': { bg: '#f0e6ff', border: '#d6b3ff' }, // Handle typo
+    'Other (Workshop/Course etc…)': { bg: '#e6fff2', border: '#b3ffd6' },
+    'Registration': { bg: '#ffe6f2', border: '#ffb3d6' },
+    'Technical Program': { bg: '#ffede6', border: '#ffcbb3' },
+    'Ticketed Event': { bg: '#fff9e6', border: '#fff0b3' }
+  };
   
   // Initialize
   fetchScheduleData();
@@ -63,13 +132,22 @@ document.addEventListener('DOMContentLoaded', function() {
         range: 2 // Start from row 3 (index 2)
       });
       
-      // Format time fields and update column references
-      events = events.map(event => ({
-        ...event,
-        "Event": event["Event/Function"], // Map the new column name to the expected field
-        "Time Start": formatExcelTime(event["Time Start"]),
-        "Time End": formatExcelTime(event["Time End"])
-      }));
+      // Format time fields and process event types
+      events = events.map(event => {
+        const eventTypes = event["Event Type"] ? event["Event Type"].split(';').map(t => t.trim()) : [];
+        const primaryEventType = eventTypes.find(t => t !== 'Ticketed Event') || eventTypes[0];
+        const isTicketed = eventTypes.includes('Ticketed Event');
+        
+        return {
+          ...event,
+          "Event": event["Event/Function"], // Map the new column name to the expected field
+          "Time Start": formatExcelTime(event["Time Start"]),
+          "Time End": formatExcelTime(event["Time End"]),
+          "EventTypes": eventTypes,
+          "PrimaryEventType": primaryEventType,
+          "IsTicketed": isTicketed
+        };
+      });
       
       // Sort events chronologically by date and time
       events.sort((a, b) => {
@@ -96,6 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Initialize UI
       createDayButtons();
+      createEventTypeButtons();
       renderSchedule();
       setupSearchFunctionality();
     } catch (error) {
@@ -193,12 +272,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Apply day filters
+  // Apply day and event type filters
   function applyFilters() {
     let filtered = [...events];
     
+    // Apply day filter
     if (selectedDay) {
       filtered = filtered.filter(event => event.Date === selectedDay);
+    }
+    
+    // Apply event type filter (multi-select)
+    if (selectedEventTypes.size > 0) {
+      filtered = filtered.filter(event => {
+        return event.EventTypes.some(type => selectedEventTypes.has(type));
+      });
     }
     
     filteredEvents = filtered;
@@ -232,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Opening search - save current state
       prevFilterState = {
         selectedDay: selectedDay,
+        selectedEventTypes: new Set(selectedEventTypes),
         filteredEvents: [...filteredEvents]
       };
       
@@ -299,10 +387,17 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Start with all events or day-filtered events
+    // Start with all events or filtered events
     let baseEvents = [...events];
     if (selectedDay) {
       baseEvents = baseEvents.filter(event => event.Date === selectedDay);
+    }
+    
+    // Apply event type filter
+    if (selectedEventTypes.size > 0) {
+      baseEvents = baseEvents.filter(event => {
+        return event.EventTypes.some(type => selectedEventTypes.has(type));
+      });
     }
     
     // Convert query to lowercase for case-insensitive search
@@ -410,13 +505,19 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Create an event element
   function createEventElement(event) {
-    const timeCategory = getTimeCategory(event["Time Start"]);
-    const isTicketed = event["Event Type"] === "Ticketed";
-    const isNetworking = event["Event Type"] === "Networking and Social Functions";
-    const isSetup = event["Event Type"] === "Setup";
+    const primaryEventType = event.PrimaryEventType;
+    const isTicketed = event.IsTicketed;
+    const isNetworking = primaryEventType === "Networking and Social Functions" || primaryEventType === "Networking ans Social Functions";
+    const isSetup = primaryEventType === "Setup";
+    
+    // Get colors for this event type
+    const colors = eventTypeColors[primaryEventType] || eventTypeColors['Technical Program'];
     
     const element = document.createElement('div');
-    element.className = `sched-event ${timeCategory}`;
+    element.className = `sched-event`;
+    element.style.backgroundColor = colors.bg;
+    element.style.borderColor = colors.border;
+    
     if (isTicketed) {
       element.classList.add('ticketed');
     }
@@ -442,6 +543,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (event["Event Details"] && event["Event Details"].toString().trim() !== '') {
       const details = document.createElement('div');
       details.className = 'sched-event-details';
+      details.style.borderTopColor = colors.border; // Match border color
       
       // Build HTML for details - convert newlines to HTML breaks
       const eventDetails = event["Event Details"].replace(/\n/g, '<br>');
@@ -654,13 +756,16 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Add events to container
         dayEvents.forEach(event => {
-          const timeCategory = getTimeCategory(event["Time Start"]);
-          const isTicketed = event["Event Type"] === "Ticketed";
-          const isNetworking = event["Event Type"] === "Networking and Social Functions";
-          const isSetup = event["Event Type"] === "Setup";
+          const primaryEventType = event.PrimaryEventType;
+          const isTicketed = event.IsTicketed;
+          const isNetworking = primaryEventType === "Networking and Social Functions" || primaryEventType === "Networking ans Social Functions";
+          const isSetup = primaryEventType === "Setup";
+          
+          // Get colors for this event type
+          const colors = eventTypeColors[primaryEventType] || eventTypeColors['Technical Program'];
           
           const eventEl = document.createElement('div');
-          eventEl.className = `event-pdf ${timeCategory}`;
+          eventEl.className = `event-pdf`;
           if (areEventsExpanded) {
             eventEl.classList.add('expanded');
           }
@@ -671,18 +776,8 @@ document.addEventListener('DOMContentLoaded', function() {
           eventEl.style.position = 'relative';
           eventEl.style.marginBottom = '2px';
           eventEl.style.lineHeight = '1.2';
-          
-          // Set background color based on time category
-          if (timeCategory === 'morning') {
-            eventEl.style.backgroundColor = '#e6f4ff';
-            eventEl.style.border = '1px solid #b3d7ff';
-          } else if (timeCategory === 'afternoon') {
-            eventEl.style.backgroundColor = '#ffede6';
-            eventEl.style.border = '1px solid #ffcbb3';
-          } else {
-            eventEl.style.backgroundColor = '#f0e6ff';
-            eventEl.style.border = '1px solid #d6b3ff';
-          }
+          eventEl.style.backgroundColor = colors.bg;
+          eventEl.style.border = `1px solid ${colors.border}`;
           
           // Add ticketed indicator if needed
           if (isTicketed) {
@@ -695,6 +790,56 @@ document.addEventListener('DOMContentLoaded', function() {
             indicator.style.backgroundColor = '#4a7aff';
             indicator.style.borderTopRightRadius = '3px';
             indicator.style.borderBottomRightRadius = '3px';
+            
+            eventEl.style.position = 'relative';
+            eventEl.style.paddingRight = '8px';
+            
+            eventEl.appendChild(indicator);
+          }
+          
+          // Event title
+          const titleEl = document.createElement('div');
+          titleEl.style.fontWeight = 'bold';
+          titleEl.style.marginBottom = '2px';
+          
+          // Apply italic style for Networking and Setup events
+          if (isNetworking || isSetup) {
+            titleEl.style.fontStyle = 'italic';
+          }
+          
+          titleEl.textContent = event.Event;
+          
+          // Event time
+          const timeEl = document.createElement('div');
+          timeEl.style.fontSize = '8px';
+          timeEl.style.color = '#444';
+          timeEl.textContent = `${event["Time Start"]} - ${event["Time End"]}`;
+          
+          eventEl.appendChild(titleEl);
+          eventEl.appendChild(timeEl);
+          
+          // If expanded and has details, add details
+          if (areEventsExpanded && event["Event Details"] && event["Event Details"].toString().trim() !== '') {
+            const detailsEl = document.createElement('div');
+            detailsEl.style.marginTop = '4px';
+            detailsEl.style.borderTop = `1px solid ${colors.border}`;
+            detailsEl.style.paddingTop = '4px';
+            detailsEl.style.fontSize = '7px';
+            
+            // Build details HTML - convert newlines to HTML breaks
+            const eventDetailsForPdf = event["Event Details"].replace(/\n/g, '<br>');
+            let detailsHTML = `
+              <div><strong>Event Details:</strong> ${eventDetailsForPdf}</div>
+              <div><strong>Location:</strong> ${event.Location || 'TBD'}</div>
+              <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
+            `;
+            
+            detailsEl.innerHTML = detailsHTML;
+            eventEl.appendChild(detailsEl);
+          }
+          
+          eventsContainer.appendChild(eventEl);
+        });ightRadius = '3px';
             
             eventEl.style.position = 'relative';
             eventEl.style.paddingRight = '8px';
@@ -752,75 +897,55 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       
-      // Add explanatory legend at the bottom if there's space
+      // Add explanatory legend at the bottom - now shows event type colors
       const legendRow = document.createElement('div');
       legendRow.style.display = 'flex';
       legendRow.style.justifyContent = 'center';
-      legendRow.style.gap = '15px';
+      legendRow.style.gap = '10px';
       legendRow.style.marginTop = '8px';
-      legendRow.style.fontSize = '8px';
+      legendRow.style.fontSize = '7px';
+      legendRow.style.flexWrap = 'wrap';
       
-      // Morning legend
-      const morningLegend = document.createElement('div');
-      morningLegend.style.display = 'flex';
-      morningLegend.style.alignItems = 'center';
-      const morningColor = document.createElement('span');
-      morningColor.style.width = '10px';
-      morningColor.style.height = '10px';
-      morningColor.style.backgroundColor = '#e6f4ff';
-      morningColor.style.border = '1px solid #b3d7ff';
-      morningColor.style.display = 'inline-block';
-      morningColor.style.marginRight = '3px';
-      morningLegend.appendChild(morningColor);
-      morningLegend.appendChild(document.createTextNode('Morning'));
+      // Get unique event types from events for legend
+      const uniqueEventTypes = [...new Set(events.map(e => e.PrimaryEventType))].sort();
       
-      // Afternoon legend
-      const afternoonLegend = document.createElement('div');
-      afternoonLegend.style.display = 'flex';
-      afternoonLegend.style.alignItems = 'center';
-      const afternoonColor = document.createElement('span');
-      afternoonColor.style.width = '10px';
-      afternoonColor.style.height = '10px';
-      afternoonColor.style.backgroundColor = '#ffede6';
-      afternoonColor.style.border = '1px solid #ffcbb3';
-      afternoonColor.style.display = 'inline-block';
-      afternoonColor.style.marginRight = '3px';
-      afternoonLegend.appendChild(afternoonColor);
-      afternoonLegend.appendChild(document.createTextNode('Afternoon'));
-      
-      // Evening legend
-      const eveningLegend = document.createElement('div');
-      eveningLegend.style.display = 'flex';
-      eveningLegend.style.alignItems = 'center';
-      const eveningColor = document.createElement('span');
-      eveningColor.style.width = '10px';
-      eveningColor.style.height = '10px';
-      eveningColor.style.backgroundColor = '#f0e6ff';
-      eveningColor.style.border = '1px solid #d6b3ff';
-      eveningColor.style.display = 'inline-block';
-      eveningColor.style.marginRight = '3px';
-      eveningLegend.appendChild(eveningColor);
-      eveningLegend.appendChild(document.createTextNode('Evening'));
+      uniqueEventTypes.forEach(eventType => {
+        const colors = eventTypeColors[eventType] || eventTypeColors['Technical Program'];
+        const legendItem = document.createElement('div');
+        legendItem.style.display = 'flex';
+        legendItem.style.alignItems = 'center';
+        legendItem.style.marginBottom = '2px';
+        
+        const colorBox = document.createElement('span');
+        colorBox.style.width = '8px';
+        colorBox.style.height = '8px';
+        colorBox.style.backgroundColor = colors.bg;
+        colorBox.style.border = `1px solid ${colors.border}`;
+        colorBox.style.display = 'inline-block';
+        colorBox.style.marginRight = '3px';
+        
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(document.createTextNode(eventType.length > 20 ? eventType.substring(0, 20) + '...' : eventType));
+        
+        legendRow.appendChild(legendItem);
+      });
       
       // Ticketed legend
       const ticketedLegend = document.createElement('div');
       ticketedLegend.style.display = 'flex';
       ticketedLegend.style.alignItems = 'center';
+      ticketedLegend.style.marginBottom = '2px';
       const ticketedColor = document.createElement('span');
-      ticketedColor.style.width = '10px';
-      ticketedColor.style.height = '10px';
+      ticketedColor.style.width = '8px';
+      ticketedColor.style.height = '8px';
       ticketedColor.style.border = '1px solid #ccc';
-      ticketedColor.style.borderRightWidth = '6px';
+      ticketedColor.style.borderRightWidth = '4px';
       ticketedColor.style.borderRightColor = '#4a7aff';
       ticketedColor.style.display = 'inline-block';
       ticketedColor.style.marginRight = '3px';
       ticketedLegend.appendChild(ticketedColor);
       ticketedLegend.appendChild(document.createTextNode('Ticketed Event'));
       
-      // Add legends to row
-      legendRow.appendChild(morningLegend);
-      legendRow.appendChild(afternoonLegend);
-      legendRow.appendChild(eveningLegend);
       legendRow.appendChild(ticketedLegend);
       
       // Add legend row to container

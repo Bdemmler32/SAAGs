@@ -154,14 +154,14 @@ body {
 
 .sched-filters {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+  flex-direction: column;
+  gap: 15px;
   margin-bottom: 15px;
   clear: both; /* Ensure filters start below search container */
   margin-top: 0; /* Remove any top margin */
 }
 
-.sched-day-filter {
+.sched-day-filter, .sched-event-type-filter {
   width: 100%;
   margin-top: 0; /* Remove any top margin */
 }
@@ -174,12 +174,12 @@ body {
   top: 5px; /* Align with the date info */
 }
 
-.sched-day-buttons {
+.sched-day-buttons, .sched-event-type-buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-start;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   margin-top: 5px; /* Small space from the label */
 }
 
@@ -189,6 +189,7 @@ body {
   background-color: #f1f1f1;
   border: none;
   cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .sched-day-button:hover {
@@ -200,6 +201,27 @@ body {
   color: white;
 }
 
+.sched-event-type-button {
+  padding: 8px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  border: 2px solid;
+}
+
+.sched-event-type-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sched-event-type-button.active {
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+}
+
 /* Legend and Expand/Collapse Container */
 .sched-legend-container {
   padding-top: 15px;
@@ -208,10 +230,23 @@ body {
 
 .sched-legend {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
   gap: 15px;
-  justify-content: flex-start;
+}
+
+.sched-legend-left {
+  display: flex;
   align-items: center;
+  gap: 15px;
+}
+
+.sched-legend-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto;
 }
 
 .sched-legend-item {
@@ -363,12 +398,12 @@ input:checked + .sched-slider:before {
   gap: 10px;
 }
 
-/* Event styling */
+/* Event styling - now uses event type colors instead of time-based colors */
 .sched-event {
   padding: 12px;
   padding-right: 20px;
   border-radius: 8px;
-  border: 2px solid transparent;
+  border: 2px solid;
   position: relative;
   transition: all 0.2s;
   width: 100%;
@@ -403,7 +438,7 @@ input:checked + .sched-slider:before {
 .sched-event-details {
   margin-top: 10px;
   padding-top: 10px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid;
   color: #666;
   display: none;
 }
@@ -445,21 +480,8 @@ input:checked + .sched-slider:before {
   font-size: 14px; /* Changed from default to 14px */
 }
 
-/* Time categories - updated ranges */
-.morning {
-  background-color: #e6f4ff;
-  border-color: #b3d7ff;
-}
-
-.afternoon {
-  background-color: #ffede6;
-  border-color: #ffcbb3;
-}
-
-.evening {
-  background-color: #f0e6ff;
-  border-color: #d6b3ff;
-}
+/* Remove old time-based categories since we're using event type colors now */
+/* The colors are now set dynamically via JavaScript based on event types */
 
 /* Empty state */
 .sched-no-events {
@@ -492,8 +514,9 @@ input:checked + .sched-slider:before {
     padding: 15px 10px;
   }
   
-  .sched-day-button {
+  .sched-day-button, .sched-event-type-button {
     padding: 6px 10px;
+    font-size: 12px;
   }
   
   .sched-legend-color, .sched-ticketed-indicator {
@@ -504,15 +527,26 @@ input:checked + .sched-slider:before {
   .sched-event {
     padding: 10px;
   }
+  
+  .sched-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .sched-legend-right {
+    margin-left: 0;
+  }
 }
 
 @media screen and (max-width: 480px) {
   .sched-legend {
-    gap: 10px;
+    gap: 8px;
   }
   
-  .sched-day-button {
+  .sched-day-button, .sched-event-type-button {
     padding: 5px 8px;
+    font-size: 11px;
   }
   
   .sched-day-content {
@@ -525,6 +559,10 @@ input:checked + .sched-slider:before {
   
   .sched-ticketed-badge {
     width: 15px;
+  }
+  
+  .sched-filters {
+    gap: 10px;
   }
 }
 
