@@ -630,11 +630,12 @@ document.addEventListener('DOMContentLoaded', function() {
     element.appendChild(time);
     
     // Create event details container - initially hidden, shown when expanded
-    // Only add details if Event Details has content OR if event has sessions
+    // Only add details if Event Details has content OR if event has sessions OR if event has location
     const hasEventDetails = event["Event Details"] && event["Event Details"].toString().trim() !== '';
     const hasSessions = event.sessions && event.sessions.length > 0;
+    const hasLocation = event.Location && event.Location.toString().trim() !== '';
     
-    if (hasEventDetails || hasSessions) {
+    if (hasEventDetails || hasSessions || hasLocation) {
       const details = document.createElement('div');
       details.className = 'sched-event-details';
       details.style.borderTopColor = colors.border; // Match border color
@@ -647,6 +648,12 @@ document.addEventListener('DOMContentLoaded', function() {
         detailsHTML += `
           <div><strong>Event Details:</strong> ${eventDetails}</div>
           <div><strong>Location:</strong> ${event.Location || 'TBD'}</div>
+          <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
+        `;
+      } else if (hasLocation) {
+        // If we only have location (no event details), show just location and event type
+        detailsHTML += `
+          <div><strong>Location:</strong> ${event.Location}</div>
           <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
         `;
       }
@@ -695,8 +702,8 @@ document.addEventListener('DOMContentLoaded', function() {
       element.appendChild(badge);
     }
     
-    // Add click event to expand/collapse for events that have details or sessions
-    if (hasEventDetails || hasSessions) {
+    // Add click event to expand/collapse for events that have details, sessions, or location
+    if (hasEventDetails || hasSessions || hasLocation) {
       element.addEventListener('click', function(e) {
         // Toggle expanded state
         this.classList.toggle('expanded');
