@@ -443,9 +443,10 @@ document.addEventListener('DOMContentLoaded', function() {
       const details = document.createElement('div');
       details.className = 'sched-event-details';
       
-      // Build HTML for details
+      // Build HTML for details - convert newlines to HTML breaks
+      const eventDetails = event["Event Details"].replace(/\n/g, '<br>');
       let detailsHTML = `
-        <div><strong>Event Details:</strong> ${event["Event Details"]}</div>
+        <div><strong>Event Details:</strong> ${eventDetails}</div>
         <div><strong>Location:</strong> ${event.Location || 'TBD'}</div>
         <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
       `;
@@ -730,9 +731,10 @@ document.addEventListener('DOMContentLoaded', function() {
             detailsEl.style.paddingTop = '4px';
             detailsEl.style.fontSize = '7px';
             
-            // Build details HTML
+            // Build details HTML - convert newlines to HTML breaks
+            const eventDetailsForPdf = event["Event Details"].replace(/\n/g, '<br>');
             let detailsHTML = `
-              <div><strong>Event Details:</strong> ${event["Event Details"]}</div>
+              <div><strong>Event Details:</strong> ${eventDetailsForPdf}</div>
               <div><strong>Location:</strong> ${event.Location || 'TBD'}</div>
               <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
             `;
