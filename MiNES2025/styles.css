@@ -457,6 +457,93 @@ input:checked + .sched-slider:before {
   display: block;
 }
 
+/* Nested Sessions Styles */
+.nested-sessions {
+  margin-top: 15px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.nested-sessions-header {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.session-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  background: currentColor;
+  opacity: 0.7;
+  border-radius: 3px;
+}
+
+.nested-session {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.nested-session:last-child {
+  margin-bottom: 0;
+}
+
+.nested-session:hover {
+  border-color: inherit;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.session-title {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.session-time {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.session-description {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.session-location {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.session-link {
+  display: inline-block;
+  background: currentColor;
+  opacity: 0.8;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.session-link:hover {
+  opacity: 1;
+  text-decoration: none;
+  color: white;
+}
+
 .sched-ticketed-badge {
   position: absolute;
   top: 0;

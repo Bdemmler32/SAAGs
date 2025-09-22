@@ -35,7 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
     'Other (Workshop/Course etc…)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light Green
     'Registration': { bg: '#f0e6ff', border: '#d6b3ff' }, // Light Purple
     'Technical Program': { bg: '#ffe6e6', border: '#ffb3b3' }, // Light Red
-    'Ticketed Event': { bg: '#e6f4ff', border: '#b3d7ff' } // Light Blue
+    'Ticketed Event': { bg: '#e6f4ff', border: '#b3d7ff' }, // Light Blue
+    'Session': { bg: '#f8f9fa', border: '#e9ecef' } // Light Gray for sessions
   };
   
   // Initialize
@@ -77,11 +78,12 @@ document.addEventListener('DOMContentLoaded', function() {
         range: 2 // Start from row 3 (index 2)
       });
       
-      // Format time fields and process event types
+      // Format time fields and process event types + nested sessions
       events = events.map(event => {
         const eventTypes = event["Event Type"] ? event["Event Type"].split(';').map(t => t.trim()) : [];
         const primaryEventType = eventTypes.find(t => t !== 'Ticketed Event') || eventTypes[0];
         const isTicketed = eventTypes.includes('Ticketed Event');
+        const isSession = primaryEventType === 'Session';
         
         return {
           ...event,
@@ -90,9 +92,34 @@ document.addEventListener('DOMContentLoaded', function() {
           "Time End": formatExcelTime(event["Time End"]),
           "EventTypes": eventTypes,
           "PrimaryEventType": primaryEventType,
-          "IsTicketed": isTicketed
+          "IsTicketed": isTicketed,
+          "IsSession": isSession,
+          "PDFLink": event["PDF Link"] || null
         };
       });
+      
+      // Process nested sessions - group sessions under preceding parent events
+      const processedEvents = [];
+      let currentParent = null;
+      
+      events.forEach(event => {
+        if (event.IsSession) {
+          // This is a session - add it to the current parent's sessions
+          if (currentParent) {
+            if (!currentParent.sessions) {
+              currentParent.sessions = [];
+            }
+            currentParent.sessions.push(event);
+          }
+        } else {
+          // This is a regular event - could be a parent for future sessions
+          currentParent = event;
+          processedEvents.push(event);
+        }
+      });
+      
+      // Update events to the processed list (without standalone sessions)
+      events = processedEvents;
       
       // Sort events chronologically by date and time
       events.sort((a, b) => {
@@ -204,11 +231,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clear container
     eventTypeButtonsContainer.innerHTML = '';
     
-    // Get all unique event types from the events
+    // Get all unique event types from the events (excluding Session type)
     const allEventTypes = new Set();
     events.forEach(event => {
       event.EventTypes.forEach(type => {
-        if (type) allEventTypes.add(type);
+        if (type && type !== 'Session') allEventTypes.add(type);
       });
     });
     
@@ -396,10 +423,14 @@ document.addEventListener('DOMContentLoaded', function() {
       const eventTypeButtons = eventTypeButtonsContainer.querySelectorAll('.sched-event-type-button');
       eventTypeButtons.forEach(btn => {
         const eventType = btn.dataset.eventType;
+        const colors = eventTypeColors[eventType] || eventTypeColors['Technical Program'];
+        
         if (selectedEventTypes.has(eventType)) {
           btn.classList.add('active');
+          btn.style.backgroundColor = colors.border; // Set to border color when active
         } else {
           btn.classList.remove('active');
+          btn.style.backgroundColor = colors.bg; // Reset to original background
         }
       });
       
@@ -452,8 +483,18 @@ document.addEventListener('DOMContentLoaded', function() {
       const typeMatch = event["Event Type"] && 
         event["Event Type"].toString().toLowerCase().includes(searchTerms);
       
+      // Search in nested sessions
+      let sessionMatch = false;
+      if (event.sessions && event.sessions.length > 0) {
+        sessionMatch = event.sessions.some(session => {
+          return (session.Event && session.Event.toString().toLowerCase().includes(searchTerms)) ||
+                 (session["Event Details"] && session["Event Details"].toString().toLowerCase().includes(searchTerms)) ||
+                 (session.Location && session.Location.toString().toLowerCase().includes(searchTerms));
+        });
+      }
+      
       // Return true if any field matches
-      return titleMatch || detailsMatch || locationMatch || typeMatch;
+      return titleMatch || detailsMatch || locationMatch || typeMatch || sessionMatch;
     });
     
     // Update results info
@@ -571,19 +612,52 @@ document.addEventListener('DOMContentLoaded', function() {
     element.appendChild(time);
     
     // Create event details container - initially hidden, shown when expanded
-    // Only add details if Event Details has content
-    if (event["Event Details"] && event["Event Details"].toString().trim() !== '') {
+    // Only add details if Event Details has content OR if event has sessions
+    const hasEventDetails = event["Event Details"] && event["Event Details"].toString().trim() !== '';
+    const hasSessions = event.sessions && event.sessions.length > 0;
+    
+    if (hasEventDetails || hasSessions) {
       const details = document.createElement('div');
       details.className = 'sched-event-details';
       details.style.borderTopColor = colors.border; // Match border color
       
-      // Build HTML for details - convert newlines to HTML breaks
-      const eventDetails = event["Event Details"].replace(/\n/g, '<br>');
-      let detailsHTML = `
-        <div><strong>Event Details:</strong> ${eventDetails}</div>
-        <div><strong>Location:</strong> ${event.Location || 'TBD'}</div>
-        <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
-      `;
+      let detailsHTML = '';
+      
+      // Add regular event details if they exist
+      if (hasEventDetails) {
+        const eventDetails = event["Event Details"].replace(/\n/g, '<br>');
+        detailsHTML += `
+          <div><strong>Event Details:</strong> ${eventDetails}</div>
+          <div><strong>Location:</strong> ${event.Location || 'TBD'}</div>
+          <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
+        `;
+      }
+      
+      // Add nested sessions if they exist
+      if (hasSessions) {
+        detailsHTML += `
+          <div class="nested-sessions">
+            <div class="nested-sessions-header">
+              <div class="session-icon"></div>
+              Session Presentations (${event.sessions.length})
+            </div>
+        `;
+        
+        event.sessions.forEach(session => {
+          const sessionDetails = session["Event Details"] ? session["Event Details"].replace(/\n/g, '<br>') : '';
+          detailsHTML += `
+            <div class="nested-session">
+              <div class="session-title">${session.Event}</div>
+              ${session["Time Start"] ? `<div class="session-time">${session["Time Start"]} - ${session["Time End"]}</div>` : ''}
+              ${sessionDetails ? `<div class="session-description">${sessionDetails}</div>` : ''}
+              ${session.Location ? `<div class="session-location"><strong>Location:</strong> ${session.Location}</div>` : ''}
+              ${session.PDFLink ? `<a href="${session.PDFLink}" class="session-link" target="_blank" onclick="event.stopPropagation();">📄 View PDF</a>` : ''}
+            </div>
+          `;
+        });
+        
+        detailsHTML += `</div>`;
+      }
       
       details.innerHTML = detailsHTML;
       element.appendChild(details);
@@ -602,8 +676,11 @@ document.addEventListener('DOMContentLoaded', function() {
       element.appendChild(badge);
     }
     
-    // Add click event to expand/collapse for events that have details
-    if (event["Event Details"] && event["Event Details"].toString().trim() !== '') {
+    // Add click event to expand/collapse for events that have details or sessions
+    const hasEventDetails = event["Event Details"] && event["Event Details"].toString().trim() !== '';
+    const hasSessions = event.sessions && event.sessions.length > 0;
+    
+    if (hasEventDetails || hasSessions) {
       element.addEventListener('click', function(e) {
         // Toggle expanded state
         this.classList.toggle('expanded');
@@ -850,21 +927,40 @@ document.addEventListener('DOMContentLoaded', function() {
           eventEl.appendChild(titleEl);
           eventEl.appendChild(timeEl);
           
-          // If expanded and has details, add details
-          if (areEventsExpanded && event["Event Details"] && event["Event Details"].toString().trim() !== '') {
+          // If expanded and has details or sessions, add details
+          const hasEventDetails = event["Event Details"] && event["Event Details"].toString().trim() !== '';
+          const hasSessions = event.sessions && event.sessions.length > 0;
+          
+          if (areEventsExpanded && (hasEventDetails || hasSessions)) {
             const detailsEl = document.createElement('div');
             detailsEl.style.marginTop = '4px';
             detailsEl.style.borderTop = `1px solid ${colors.border}`;
             detailsEl.style.paddingTop = '4px';
             detailsEl.style.fontSize = '7px';
             
-            // Build details HTML - convert newlines to HTML breaks
-            const eventDetailsForPdf = event["Event Details"].replace(/\n/g, '<br>');
-            let detailsHTML = `
-              <div><strong>Event Details:</strong> ${eventDetailsForPdf}</div>
-              <div><strong>Location:</strong> ${event.Location || 'TBD'}</div>
-              <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
-            `;
+            let detailsHTML = '';
+            
+            // Add regular event details if they exist
+            if (hasEventDetails) {
+              const eventDetailsForPdf = event["Event Details"].replace(/\n/g, '<br>');
+              detailsHTML += `
+                <div><strong>Event Details:</strong> ${eventDetailsForPdf}</div>
+                <div><strong>Location:</strong> ${event.Location || 'TBD'}</div>
+                <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
+              `;
+            }
+            
+            // Add sessions for PDF if they exist
+            if (hasSessions) {
+              detailsHTML += `<div><strong>Sessions:</strong></div>`;
+              event.sessions.forEach(session => {
+                detailsHTML += `<div style="margin-left: 8px;">• ${session.Event}`;
+                if (session["Time Start"]) {
+                  detailsHTML += ` (${session["Time Start"]} - ${session["Time End"]})`;
+                }
+                detailsHTML += `</div>`;
+              });
+            }
             
             detailsEl.innerHTML = detailsHTML;
             eventEl.appendChild(detailsEl);
