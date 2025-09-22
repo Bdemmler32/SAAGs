@@ -26,13 +26,14 @@ document.addEventListener('DOMContentLoaded', function() {
   let isSearchActive = false;
   let prevFilterState = null;
   
-  // Event Type Colors - updated with new distinct palette
+  // Event Type Colors - corrected with the specified colors
   const eventTypeColors = {
     'All Conference Activities': { bg: '#f5f0e8', border: '#d4c4a8' }, // Light Brown
     'Council/Committee Meetings': { bg: '#fff2e6', border: '#ffccb3' }, // Light Orange
     'Networking and Social Functions': { bg: '#fff9e6', border: '#fff0b3' }, // Light Yellow
     'Networking ans Social Functions': { bg: '#fff9e6', border: '#fff0b3' }, // Handle typo - Light Yellow
     'Other (Workshop/Course etcâ€¦)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light Green
+    'Other (Workshop/Course etc...)': { bg: '#e6fff2', border: '#b3ffd6' }, // Handle alternative spelling - Light Green
     'Registration': { bg: '#f0e6ff', border: '#d6b3ff' }, // Light Purple
     'Technical Program': { bg: '#ffe6e6', border: '#ffb3b3' }, // Light Red
     'Ticketed Event': { bg: '#e6f4ff', border: '#b3d7ff' }, // Light Blue
@@ -652,7 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
               ${session["Time Start"] ? `<div class="session-time">${session["Time Start"]} - ${session["Time End"]}</div>` : ''}
               ${sessionDetails ? `<div class="session-description">${sessionDetails}</div>` : ''}
               ${session.Location ? `<div class="session-location"><strong>Location:</strong> ${session.Location}</div>` : ''}
-              ${pdfUrl ? `<a href="${pdfUrl}" class="session-link" target="_blank" onclick="event.stopPropagation();"><span class="pdf-icon">📄</span> View PDF</a>` : ''}
+              ${pdfUrl ? `<a href="${pdfUrl}" class="session-link" target="_blank" onclick="event.stopPropagation();"><span class="pdf-icon">📄</span> View Link</a>` : ''}
             </div>
           `;
         });
