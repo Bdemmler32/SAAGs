@@ -1,59 +1,4 @@
-  // Create event type filter buttons
-  function createEventTypeButtons() {
-    // Clear container
-    eventTypeButtonsContainer.innerHTML = '';
-    
-    // Get all unique event types from the events
-    const allEventTypes = new Set();
-    events.forEach(event => {
-      event.EventTypes.forEach(type => {
-        if (type) allEventTypes.add(type);
-      });
-    });
-    
-    const uniqueEventTypes = Array.from(allEventTypes).sort();
-    
-    // Create buttons for each event type
-    uniqueEventTypes.forEach(eventType => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'sched-event-type-button';
-      btn.textContent = eventType;
-      btn.dataset.eventType = eventType;
-      
-      // Set button color based on event type
-      const colors = eventTypeColors[eventType] || eventTypeColors['Technical Program'];
-      btn.style.backgroundColor = colors.bg;
-      btn.style.borderColor = colors.border;
-      btn.style.border = `2px solid ${colors.border}`;
-      
-      btn.addEventListener('click', function() {
-        toggleEventTypeFilter(eventType, this);
-      });
-      eventTypeButtonsContainer.appendChild(btn);
-    });
-  }
-  
-  // Toggle event type filter (multi-select)
-  function toggleEventTypeFilter(eventType, button) {
-    if (selectedEventTypes.has(eventType)) {
-      // Remove from selection
-      selectedEventTypes.delete(eventType);
-      button.classList.remove('active');
-    } else {
-      // Add to selection
-      selectedEventTypes.add(eventType);
-      button.classList.add('active');
-    }
-    
-    if (isSearchActive) {
-      // If search is active, apply both filters and search
-      performSearch(searchInput.value);
-    } else {
-      // Otherwise just apply filters
-      applyFilters();
-    }
-  }document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
   // DOM Elements
   const dayButtonsContainer = document.getElementById('dayButtons');
   const eventTypeButtonsContainer = document.getElementById('eventTypeButtons');
@@ -254,6 +199,63 @@
     });
   }
   
+  // Create event type filter buttons
+  function createEventTypeButtons() {
+    // Clear container
+    eventTypeButtonsContainer.innerHTML = '';
+    
+    // Get all unique event types from the events
+    const allEventTypes = new Set();
+    events.forEach(event => {
+      event.EventTypes.forEach(type => {
+        if (type) allEventTypes.add(type);
+      });
+    });
+    
+    const uniqueEventTypes = Array.from(allEventTypes).sort();
+    
+    // Create buttons for each event type
+    uniqueEventTypes.forEach(eventType => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sched-event-type-button';
+      btn.textContent = eventType;
+      btn.dataset.eventType = eventType;
+      
+      // Set button color based on event type
+      const colors = eventTypeColors[eventType] || eventTypeColors['Technical Program'];
+      btn.style.backgroundColor = colors.bg;
+      btn.style.borderColor = colors.border;
+      btn.style.border = `2px solid ${colors.border}`;
+      
+      btn.addEventListener('click', function() {
+        toggleEventTypeFilter(eventType, this);
+      });
+      eventTypeButtonsContainer.appendChild(btn);
+    });
+  }
+  
+  // Toggle event type filter (multi-select)
+  function toggleEventTypeFilter(eventType, button) {
+    if (selectedEventTypes.has(eventType)) {
+      // Remove from selection
+      selectedEventTypes.delete(eventType);
+      button.classList.remove('active');
+    } else {
+      // Add to selection
+      selectedEventTypes.add(eventType);
+      button.classList.add('active');
+    }
+    
+    if (isSearchActive) {
+      // If search is active, apply both filters and search
+      performSearch(searchInput.value);
+    } else {
+      // Otherwise just apply filters
+      applyFilters();
+    }
+  }
+  
   // Set active day
   function setActiveDay(day, button) {
     selectedDay = day;
@@ -351,25 +353,37 @@
     // Restore previous state
     if (prevFilterState) {
       selectedDay = prevFilterState.selectedDay;
+      selectedEventTypes = new Set(prevFilterState.selectedEventTypes);
       
       // Update day button selection
-      const buttons = dayButtonsContainer.querySelectorAll('.sched-day-button');
-      buttons.forEach(btn => btn.classList.remove('active'));
+      const dayButtons = dayButtonsContainer.querySelectorAll('.sched-day-button');
+      dayButtons.forEach(btn => btn.classList.remove('active'));
       
-      // Find the correct button to activate
+      // Find the correct day button to activate
       if (selectedDay === null) {
         // Activate "All Days" button
-        buttons[0].classList.add('active');
+        dayButtons[0].classList.add('active');
       } else {
         // Find and activate the correct day button
         const dayButtonText = selectedDay.split(',')[0];
-        for (let i = 1; i < buttons.length; i++) {
-          if (buttons[i].textContent === dayButtonText) {
-            buttons[i].classList.add('active');
+        for (let i = 1; i < dayButtons.length; i++) {
+          if (dayButtons[i].textContent === dayButtonText) {
+            dayButtons[i].classList.add('active');
             break;
           }
         }
       }
+      
+      // Update event type button selection
+      const eventTypeButtons = eventTypeButtonsContainer.querySelectorAll('.sched-event-type-button');
+      eventTypeButtons.forEach(btn => {
+        const eventType = btn.dataset.eventType;
+        if (selectedEventTypes.has(eventType)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
       
       // Apply the restored filter state
       applyFilters();
@@ -839,56 +853,6 @@
           }
           
           eventsContainer.appendChild(eventEl);
-        });ightRadius = '3px';
-            
-            eventEl.style.position = 'relative';
-            eventEl.style.paddingRight = '8px';
-            
-            eventEl.appendChild(indicator);
-          }
-          
-          // Event title
-          const titleEl = document.createElement('div');
-          titleEl.style.fontWeight = 'bold';
-          titleEl.style.marginBottom = '2px';
-          
-          // Apply italic style for Networking and Setup events
-          if (isNetworking || isSetup) {
-            titleEl.style.fontStyle = 'italic';
-          }
-          
-          titleEl.textContent = event.Event;
-          
-          // Event time
-          const timeEl = document.createElement('div');
-          timeEl.style.fontSize = '8px';
-          timeEl.style.color = '#444';
-          timeEl.textContent = `${event["Time Start"]} - ${event["Time End"]}`;
-          
-          eventEl.appendChild(titleEl);
-          eventEl.appendChild(timeEl);
-          
-          // If expanded and has details, add details
-          if (areEventsExpanded && event["Event Details"] && event["Event Details"].toString().trim() !== '') {
-            const detailsEl = document.createElement('div');
-            detailsEl.style.marginTop = '4px';
-            detailsEl.style.borderTop = '1px solid rgba(0,0,0,0.1)';
-            detailsEl.style.paddingTop = '4px';
-            detailsEl.style.fontSize = '7px';
-            
-            // Build details HTML - convert newlines to HTML breaks
-            const eventDetailsForPdf = event["Event Details"].replace(/\n/g, '<br>');
-            let detailsHTML = `
-              <div><strong>Event Details:</strong> ${eventDetailsForPdf}</div>
-              <div><strong>Location:</strong> ${event.Location || 'TBD'}</div>
-              <div><strong>Event Type:</strong> ${event["Event Type"]}</div>
-            `;
-            
-            detailsEl.innerHTML = detailsHTML;
-            eventEl.appendChild(detailsEl);
-          }
-          
-          eventsContainer.appendChild(eventEl);
         });
         
         dayColumn.appendChild(eventsContainer);
@@ -1025,34 +989,6 @@
       alert("Error starting PDF export: " + outerError.message);
     }
   });
-  
-  // Get time category based on hour with new ranges
-  function getTimeCategory(timeStart) {
-    if (!timeStart) return 'morning';
-    
-    // Handle string time format (e.g., "8:00 AM")
-    let hour = 0;
-    let isPM = false;
-    
-    if (typeof timeStart === 'string') {
-      const timeParts = timeStart.split(' ');
-      const hourMin = timeParts[0].split(':');
-      hour = parseInt(hourMin[0]);
-      isPM = timeParts[1] === 'PM';
-    }
-    
-    let hour24 = hour;
-    if (isPM && hour !== 12) hour24 = hour + 12;
-    if (!isPM && hour === 12) hour24 = 0;
-    
-    // Morning: 4:00 AM to 11:59 AM (4-11)
-    // Afternoon: 12:00 PM to 4:59 PM (12-16)
-    // Evening: 5:00 PM to 3:59 AM (17-23, 0-3)
-    
-    if ((hour24 >= 4 && hour24 < 12)) return 'morning';
-    if (hour24 >= 12 && hour24 < 17) return 'afternoon';
-    return 'evening';
-  }
   
   // Convert time to minutes for sorting
   function timeToMinutes(timeStr) {
