@@ -457,7 +457,7 @@ input:checked + .sched-slider:before {
   display: block;
 }
 
-/* Nested Sessions Styles */
+/* Nested Sessions Styles - UPDATED */
 .nested-sessions {
   margin-top: 15px;
   background: rgba(255, 255, 255, 0.7);
@@ -489,6 +489,10 @@ input:checked + .sched-slider:before {
   padding: 10px;
   margin-bottom: 8px;
   transition: all 0.2s;
+  /* Make all sessions the same height by using flexbox */
+  display: flex;
+  flex-direction: column;
+  min-height: 120px; /* Set a minimum height for consistency */
 }
 
 .nested-session:last-child {
@@ -504,12 +508,14 @@ input:checked + .sched-slider:before {
   font-weight: 600;
   color: #333;
   margin-bottom: 4px;
+  flex-shrink: 0; /* Prevent title from shrinking */
 }
 
 .session-time {
   font-size: 13px;
   color: #666;
   margin-bottom: 4px;
+  flex-shrink: 0; /* Prevent time from shrinking */
 }
 
 .session-description {
@@ -517,31 +523,40 @@ input:checked + .sched-slider:before {
   color: #666;
   margin-bottom: 6px;
   line-height: 1.4;
+  flex-grow: 1; /* Allow description to take up available space */
 }
 
 .session-location {
   font-size: 13px;
   color: #666;
   margin-bottom: 6px;
+  flex-shrink: 0; /* Prevent location from shrinking */
 }
 
 .session-link {
-  display: inline-block;
-  background: currentColor;
-  opacity: 0.8;
-  color: white;
-  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #4a7aff;
+  color: #666 !important; /* Changed from white to match descriptive text color, using !important to override */
+  padding: 6px 10px;
   border-radius: 4px;
   text-decoration: none;
   font-size: 12px;
   font-weight: 500;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
+  align-self: flex-start; /* Align button to start */
+  margin-top: auto; /* Push button to bottom of flex container */
 }
 
 .session-link:hover {
-  opacity: 1;
+  background: #3a6aef;
   text-decoration: none;
-  color: white;
+  color: #555 !important; /* Darker on hover but still readable */
+}
+
+.pdf-icon {
+  font-size: 14px;
 }
 
 .sched-ticketed-badge {
