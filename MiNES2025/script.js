@@ -26,14 +26,16 @@ document.addEventListener('DOMContentLoaded', function() {
   let isSearchActive = false;
   let prevFilterState = null;
   
-  // Event Type Colors - corrected with the specified colors
+  // Event Type Colors - comprehensive mapping with variations
   const eventTypeColors = {
     'All Conference Activities': { bg: '#f5f0e8', border: '#d4c4a8' }, // Light Brown
     'Council/Committee Meetings': { bg: '#fff2e6', border: '#ffccb3' }, // Light Orange
     'Networking and Social Functions': { bg: '#fff9e6', border: '#fff0b3' }, // Light Yellow
     'Networking ans Social Functions': { bg: '#fff9e6', border: '#fff0b3' }, // Handle typo - Light Yellow
-    'Other (Workshop/Course etcâ€¦)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light Green
-    'Other (Workshop/Course etc...)': { bg: '#e6fff2', border: '#b3ffd6' }, // Handle alternative spelling - Light Green
+    'Other (Workshop/Course etcâ€¦)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light Green - original with special chars
+    'Other (Workshop/Course etc...)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light Green - standard punctuation
+    'Other (Workshop/Course etc…)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light Green - ellipsis
+    'Other (Workshop/Course etc)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light Green - no ellipsis
     'Registration': { bg: '#f0e6ff', border: '#d6b3ff' }, // Light Purple
     'Technical Program': { bg: '#ffe6e6', border: '#ffb3b3' }, // Light Red
     'Ticketed Event': { bg: '#e6f4ff', border: '#b3d7ff' }, // Light Blue
@@ -236,7 +238,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const allEventTypes = new Set();
     events.forEach(event => {
       event.EventTypes.forEach(type => {
-        if (type && type !== 'Session') allEventTypes.add(type);
+        if (type && type !== 'Session') {
+          console.log('Event type found:', JSON.stringify(type)); // Debug log
+          allEventTypes.add(type);
+        }
       });
     });
     
@@ -250,8 +255,20 @@ document.addEventListener('DOMContentLoaded', function() {
       btn.textContent = eventType;
       btn.dataset.eventType = eventType;
       
-      // Set button color based on event type
-      const colors = eventTypeColors[eventType] || eventTypeColors['Technical Program'];
+      // Set button color based on event type - with better matching
+      let colors = eventTypeColors[eventType];
+      
+      // If no exact match, try partial matching for "Other" variations
+      if (!colors && eventType.toLowerCase().includes('other')) {
+        colors = eventTypeColors['Other (Workshop/Course etc...)'];
+      }
+      
+      // Fallback to Technical Program colors if no match found
+      if (!colors) {
+        console.warn('No color found for event type:', eventType);
+        colors = eventTypeColors['Technical Program'];
+      }
+      
       btn.style.backgroundColor = colors.bg;
       btn.style.borderColor = colors.border;
       btn.style.border = `2px solid ${colors.border}`;
