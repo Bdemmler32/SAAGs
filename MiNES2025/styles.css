@@ -189,6 +189,7 @@ body {
   background-color: #f1f1f1;
   border: none;
   cursor: pointer;
+  font-size: 14px; /* Made explicit to match event type buttons */
   transition: background-color 0.2s;
 }
 
@@ -206,7 +207,7 @@ body {
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 14px;
+  font-size: 14px; /* Made same as day buttons */
   font-weight: 500;
   border: 2px solid;
 }
@@ -220,6 +221,7 @@ body {
   font-weight: bold;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   transform: translateY(-1px);
+  /* Background color is now set via JavaScript to match border color */
 }
 
 /* Legend and Expand/Collapse Container */

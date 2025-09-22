@@ -26,16 +26,16 @@ document.addEventListener('DOMContentLoaded', function() {
   let isSearchActive = false;
   let prevFilterState = null;
   
-  // Event Type Colors - pastel palette
+  // Event Type Colors - pastel palette with better differentiation
   const eventTypeColors = {
-    'All Conference Activities': { bg: '#e6f4ff', border: '#b3d7ff' },
-    'Council/Committee Meetings': { bg: '#fff2e6', border: '#ffccb3' },
-    'Networking and Social Functions': { bg: '#f0e6ff', border: '#d6b3ff' },
+    'All Conference Activities': { bg: '#fff9e6', border: '#fff0b3' }, // Light yellow
+    'Council/Committee Meetings': { bg: '#f0fff0', border: '#c0ffc0' }, // Light mint green
+    'Networking and Social Functions': { bg: '#f0e6ff', border: '#d6b3ff' }, // Light purple
     'Networking ans Social Functions': { bg: '#f0e6ff', border: '#d6b3ff' }, // Handle typo
-    'Other (Workshop/Course etc…)': { bg: '#e6fff2', border: '#b3ffd6' },
-    'Registration': { bg: '#ffe6f2', border: '#ffb3d6' },
-    'Technical Program': { bg: '#ffede6', border: '#ffcbb3' },
-    'Ticketed Event': { bg: '#fff9e6', border: '#fff0b3' }
+    'Other (Workshop/Course etc…)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light green
+    'Registration': { bg: '#ffe6f2', border: '#ffb3d6' }, // Light pink
+    'Technical Program': { bg: '#ffede6', border: '#ffcbb3' }, // Light peach
+    'Ticketed Event': { bg: '#e6f4ff', border: '#b3d7ff' } // Light blue (to match ticketed indicator)
   };
   
   // Initialize
@@ -231,20 +231,38 @@ document.addEventListener('DOMContentLoaded', function() {
       btn.addEventListener('click', function() {
         toggleEventTypeFilter(eventType, this);
       });
+      
+      // Add active state styling
+      btn.addEventListener('mousedown', function() {
+        if (!selectedEventTypes.has(eventType)) {
+          this.style.backgroundColor = colors.border;
+        }
+      });
+      
+      btn.addEventListener('mouseup', function() {
+        if (!selectedEventTypes.has(eventType)) {
+          this.style.backgroundColor = colors.bg;
+        }
+      });
+      
       eventTypeButtonsContainer.appendChild(btn);
     });
   }
   
   // Toggle event type filter (multi-select)
   function toggleEventTypeFilter(eventType, button) {
+    const colors = eventTypeColors[eventType] || eventTypeColors['Technical Program'];
+    
     if (selectedEventTypes.has(eventType)) {
       // Remove from selection
       selectedEventTypes.delete(eventType);
       button.classList.remove('active');
+      button.style.backgroundColor = colors.bg; // Reset to original background
     } else {
       // Add to selection
       selectedEventTypes.add(eventType);
       button.classList.add('active');
+      button.style.backgroundColor = colors.border; // Set to border color when active
     }
     
     if (isSearchActive) {
