@@ -651,7 +651,7 @@ document.addEventListener('DOMContentLoaded', function() {
               ${session["Time Start"] ? `<div class="session-time">${session["Time Start"]} - ${session["Time End"]}</div>` : ''}
               ${sessionDetails ? `<div class="session-description">${sessionDetails}</div>` : ''}
               ${session.Location ? `<div class="session-location"><strong>Location:</strong> ${session.Location}</div>` : ''}
-              ${session.PDFLink ? `<a href="${session.PDFLink}" class="session-link" target="_blank" onclick="event.stopPropagation();">📄 View PDF</a>` : ''}
+              ${session.PDFLink ? `<a href="${session.PDFLink}" class="session-link" target="_blank" onclick="event.stopPropagation();"><span class="pdf-icon">📄</span> View PDF</a>` : ''}
             </div>
           `;
         });
