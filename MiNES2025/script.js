@@ -26,16 +26,16 @@ document.addEventListener('DOMContentLoaded', function() {
   let isSearchActive = false;
   let prevFilterState = null;
   
-  // Event Type Colors - pastel palette with better differentiation
+  // Event Type Colors - updated with new distinct palette
   const eventTypeColors = {
-    'All Conference Activities': { bg: '#fff9e6', border: '#fff0b3' }, // Light yellow
-    'Council/Committee Meetings': { bg: '#f0fff0', border: '#c0ffc0' }, // Light mint green
-    'Networking and Social Functions': { bg: '#f0e6ff', border: '#d6b3ff' }, // Light purple
-    'Networking ans Social Functions': { bg: '#f0e6ff', border: '#d6b3ff' }, // Handle typo
-    'Other (Workshop/Course etc…)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light green
-    'Registration': { bg: '#ffe6f2', border: '#ffb3d6' }, // Light pink
-    'Technical Program': { bg: '#ffede6', border: '#ffcbb3' }, // Light peach
-    'Ticketed Event': { bg: '#e6f4ff', border: '#b3d7ff' } // Light blue (to match ticketed indicator)
+    'All Conference Activities': { bg: '#f5f0e8', border: '#d4c4a8' }, // Light Brown
+    'Council/Committee Meetings': { bg: '#fff2e6', border: '#ffccb3' }, // Light Orange
+    'Networking and Social Functions': { bg: '#fff9e6', border: '#fff0b3' }, // Light Yellow
+    'Networking ans Social Functions': { bg: '#fff9e6', border: '#fff0b3' }, // Handle typo - Light Yellow
+    'Other (Workshop/Course etc…)': { bg: '#e6fff2', border: '#b3ffd6' }, // Light Green
+    'Registration': { bg: '#f0e6ff', border: '#d6b3ff' }, // Light Purple
+    'Technical Program': { bg: '#ffe6e6', border: '#ffb3b3' }, // Light Red
+    'Ticketed Event': { bg: '#e6f4ff', border: '#b3d7ff' } // Light Blue
   };
   
   // Initialize
