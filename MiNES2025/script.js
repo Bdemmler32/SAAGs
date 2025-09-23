@@ -798,6 +798,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
       
+      // Add the "Current as of" date below the header image
+      const dateInfoForPdf = document.createElement('div');
+      dateInfoForPdf.textContent = dateInfo.textContent; // Use the same text from the web version
+      dateInfoForPdf.style.textAlign = 'center';
+      dateInfoForPdf.style.fontStyle = 'italic';
+      dateInfoForPdf.style.color = '#666';
+      dateInfoForPdf.style.marginBottom = '10px';
+      dateInfoForPdf.style.fontSize = '12px';
+      
+      // Insert the date info after the header image
+      const headerSection = pdfContainer.querySelector('.sched-header');
+      if (headerSection && headerImage) {
+        headerImage.parentNode.insertBefore(dateInfoForPdf, headerImage.nextSibling);
+      }
+      
       // Get all unique days from the events
       const uniqueDays = [...new Set(events.map(event => event.Date))];
       
